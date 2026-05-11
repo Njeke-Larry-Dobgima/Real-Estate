@@ -114,7 +114,7 @@ export default function SearchScreen() {
       minPrice: localMinPrice ? parseInt(localMinPrice, 10) : null,
       maxPrice: localMaxPrice ? parseInt(localMaxPrice, 10) : null,
     });
-    router.push('/(tabs)/');
+    router.push('/');
   }, [setFilters, localSearchQuery, localMinPrice, localMaxPrice]);
 
   /**

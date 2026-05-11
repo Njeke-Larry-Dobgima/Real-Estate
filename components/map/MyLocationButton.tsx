@@ -3,18 +3,11 @@
  * Floating button to center map on user's location
  */
 
-import React from 'react';
-import { StyleSheet, Pressable } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
 
 import { Colors, BorderRadius, Shadows, Spacing } from '../../constants/colors';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 /**
  * Props for MyLocationButton component
@@ -28,34 +21,38 @@ interface MyLocationButtonProps {
  * Floating button to center the map on user's current location
  */
 const MyLocationButton: React.FC<MyLocationButtonProps> = ({ onPress, disabled = false }) => {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.9);
+    Animated.spring(scale, {
+      toValue: 0.9,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1);
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
-    <AnimatedPressable
-      style={[styles.button, animatedStyle, disabled && styles.buttonDisabled]}
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={disabled}
-    >
-      <Ionicons
-        name="locate"
-        size={24}
-        color={disabled ? Colors.gray400 : Colors.primary}
-      />
-    </AnimatedPressable>
+    <Animated.View style={[styles.button, { transform: [{ scale }] }, disabled && styles.buttonDisabled]}>
+      <Pressable
+        style={styles.pressable}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+      >
+        <Ionicons
+          name="locate"
+          size={24}
+          color={disabled ? Colors.gray400 : Colors.primary}
+        />
+      </Pressable>
+    </Animated.View>
   );
 };
 
@@ -68,9 +65,12 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: BorderRadius.circle,
     backgroundColor: Colors.white,
+    ...Shadows.medium,
+  },
+  pressable: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.medium,
   },
   buttonDisabled: {
     opacity: 0.6,
