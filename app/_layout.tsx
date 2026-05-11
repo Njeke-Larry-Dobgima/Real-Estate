@@ -4,8 +4,7 @@
 
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 import { ListingsProvider } from '../context/ListingsContext';
 import { FiltersProvider } from '../context/FiltersContext';
@@ -18,7 +17,7 @@ import { Colors } from '../constants/colors';
  */
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <ListingsProvider>
         <FiltersProvider>
           <SavedProvider>
@@ -42,7 +41,7 @@ export default function RootLayout() {
           </SavedProvider>
         </FiltersProvider>
       </ListingsProvider>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 

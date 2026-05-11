@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/node": "^20.19.40",
     "@types/react": "~19.1.0",
+    "firebase-admin": "^13.9.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
