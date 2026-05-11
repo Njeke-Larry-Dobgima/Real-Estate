@@ -15,17 +15,13 @@ import {
   Alert,
   Linking,
   ActivityIndicator,
+  Animated,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
-import { Platform } from 'react-native';
 
 import {
   Colors,
@@ -63,7 +59,7 @@ export default function ListingDetailScreen() {
   const [agentLoading, setAgentLoading] = useState(true);
 
   const flatListRef = useRef<FlatList>(null);
-  const heartScale = useSharedValue(1);
+  const heartScale = useRef(new Animated.Value(1)).current;
 
   // Load listing data
   useEffect(() => {
@@ -100,9 +96,16 @@ export default function ListingDetailScreen() {
   const handleSaveToggle = useCallback(() => {
     if (!listing) return;
 
-    heartScale.value = withSpring(1.3, { damping: 10 }, () => {
-      heartScale.value = withSpring(1);
-    });
+    Animated.sequence([
+      Animated.spring(heartScale, {
+        toValue: 1.3,
+        useNativeDriver: true,
+      }),
+      Animated.spring(heartScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
     toggleSaved(listing.id);
   }, [listing, toggleSaved, heartScale]);
@@ -171,11 +174,6 @@ export default function ListingDetailScreen() {
     }
   }, [agent, listing]);
 
-  // Animated heart style
-  const animatedHeartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
-  }));
-
   // Loading state
   if (loading || !listing) {
     return (
@@ -236,7 +234,7 @@ export default function ListingDetailScreen() {
 
           {/* Save button */}
           <Pressable style={styles.saveButton} onPress={handleSaveToggle}>
-            <Animated.View style={animatedHeartStyle}>
+            <Animated.View style={{ transform: [{ scale: heartScale }] }}>
               <Ionicons
                 name={saved ? 'heart' : 'heart-outline'}
                 size={24}

@@ -3,18 +3,10 @@
  * Bottom sheet preview card shown when a map marker is tapped
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, Dimensions, Animated } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { router } from 'expo-router';
 
 import { Listing } from '../../types';
@@ -42,42 +34,25 @@ const ListingPreviewCard: React.FC<ListingPreviewCardProps> = ({
   visible,
   onClose,
 }) => {
-  const translateY = useSharedValue(CARD_HEIGHT + 100);
+  const translateY = useRef(new Animated.Value(CARD_HEIGHT + 100)).current;
 
   // Animate card in/out based on visibility
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible && listing) {
-      translateY.value = withSpring(0, {
+      Animated.spring(translateY, {
+        toValue: 0,
         damping: 20,
         stiffness: 200,
-      });
+        useNativeDriver: true,
+      }).start();
     } else {
-      translateY.value = withTiming(CARD_HEIGHT + 100, { duration: 200 });
+      Animated.timing(translateY, {
+        toValue: CARD_HEIGHT + 100,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     }
   }, [visible, listing, translateY]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  // Pan gesture for dismissing the card
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      if (event.translationY > 0) {
-        translateY.value = event.translationY;
-      }
-    })
-    .onEnd((event) => {
-      if (event.translationY > 50 || event.velocityY > 500) {
-        translateY.value = withTiming(CARD_HEIGHT + 100, { duration: 200 });
-        runOnJS(onClose)();
-      } else {
-        translateY.value = withSpring(0, {
-          damping: 20,
-          stiffness: 200,
-        });
-      }
-    });
 
   const handlePress = () => {
     if (listing) {
@@ -88,58 +63,56 @@ const ListingPreviewCard: React.FC<ListingPreviewCardProps> = ({
   if (!listing) return null;
 
   return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.container, animatedStyle]}>
-        <View style={styles.handle} />
-        <Pressable style={styles.card} onPress={handlePress}>
-          {/* Thumbnail */}
-          <Image
-            source={{ uri: listing.images[0] }}
-            style={styles.thumbnail}
-            contentFit="cover"
-            placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-            transition={200}
-          />
+    <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
+      <View style={styles.handle} />
+      <Pressable style={styles.card} onPress={handlePress}>
+        {/* Thumbnail */}
+        <Image
+          source={{ uri: listing.images[0] }}
+          style={styles.thumbnail}
+          contentFit="cover"
+          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+          transition={200}
+        />
 
-          {/* Content */}
-          <View style={styles.content}>
-            <Text style={styles.price}>{formatMarkerPrice(listing.price)}</Text>
-            <Text style={styles.title} numberOfLines={2}>
-              {listing.title}
+        {/* Content */}
+        <View style={styles.content}>
+          <Text style={styles.price}>{formatMarkerPrice(listing.price)}</Text>
+          <Text style={styles.title} numberOfLines={2}>
+            {listing.title}
+          </Text>
+
+          {/* Stats row */}
+          <View style={styles.statsRow}>
+            {listing.bedrooms > 0 && (
+              <View style={styles.stat}>
+                <Ionicons name="bed-outline" size={14} color={Colors.textSecondary} />
+                <Text style={styles.statText}>{formatBedroomLabel(listing.bedrooms)}</Text>
+              </View>
+            )}
+            {listing.bathrooms > 0 && (
+              <View style={styles.stat}>
+                <Ionicons name="water-outline" size={14} color={Colors.textSecondary} />
+                <Text style={styles.statText}>{formatBathroomLabel(listing.bathrooms)}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Location */}
+          <View style={styles.locationRow}>
+            <Ionicons name="location-outline" size={12} color={Colors.textSecondary} />
+            <Text style={styles.locationText} numberOfLines={1}>
+              {listing.neighborhood}, {listing.city}
             </Text>
-
-            {/* Stats row */}
-            <View style={styles.statsRow}>
-              {listing.bedrooms > 0 && (
-                <View style={styles.stat}>
-                  <Ionicons name="bed-outline" size={14} color={Colors.textSecondary} />
-                  <Text style={styles.statText}>{formatBedroomLabel(listing.bedrooms)}</Text>
-                </View>
-              )}
-              {listing.bathrooms > 0 && (
-                <View style={styles.stat}>
-                  <Ionicons name="water-outline" size={14} color={Colors.textSecondary} />
-                  <Text style={styles.statText}>{formatBathroomLabel(listing.bathrooms)}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* Location */}
-            <View style={styles.locationRow}>
-              <Ionicons name="location-outline" size={12} color={Colors.textSecondary} />
-              <Text style={styles.locationText} numberOfLines={1}>
-                {listing.neighborhood}, {listing.city}
-              </Text>
-            </View>
           </View>
+        </View>
 
-          {/* Arrow indicator */}
-          <View style={styles.arrowContainer}>
-            <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
-          </View>
-        </Pressable>
-      </Animated.View>
-    </GestureDetector>
+        {/* Arrow indicator */}
+        <View style={styles.arrowContainer}>
+          <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 };
 
