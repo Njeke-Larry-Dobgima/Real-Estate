@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,7 +19,7 @@ import { Colors, BorderRadius } from '../../constants/colors';
  * Props for LoadingSkeleton component
  */
 interface LoadingSkeletonProps {
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   borderRadius?: number;
   style?: ViewStyle;
@@ -55,13 +55,13 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     <Animated.View
       style={[
         styles.skeleton,
+        animatedStyle,
+        style,
         {
           width,
           height,
           borderRadius,
         },
-        animatedStyle,
-        style,
       ]}
     />
   );
