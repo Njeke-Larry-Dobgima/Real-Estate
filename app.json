@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "MapHouse",
+    "slug": "maphouse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "maphouse",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6C47FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maphouse.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "MapHouse needs your location to show properties near you.",
+        "NSLocationAlwaysUsageDescription": "MapHouse needs your location to show properties near you."
+      },
+      "config": {
+        "googleMapsApiKey": ""
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6C47FF"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.maphouse.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "MapHouse needs your location to show properties near you."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
