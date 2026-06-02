@@ -113,6 +113,7 @@ export interface ListingsContextState {
 export interface ListingsContextType extends ListingsContextState {
   getListingById: (id: string) => Listing | undefined;
   getAgentById: (id: string) => Promise<Agent | null>;
+  createListing: (input: CreateListingInput, agentId: string) => Promise<string>;
 }
 
 /**
@@ -133,4 +134,49 @@ export interface SavedContextType {
   toggleSaved: (id: string) => void;
   isSaved: (id: string) => boolean;
   loading: boolean;
+}
+
+/**
+ * App user interface (Firebase Auth + Firestore profile)
+ */
+export interface AppUser {
+  uid: string;
+  email: string;
+  displayName: string;
+  phone: string;
+  role: 'user' | 'agent';
+  createdAt: Date;
+}
+
+/**
+ * Auth context interface
+ */
+export interface AuthContextType {
+  user: AppUser | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string, phone: string) => Promise<void>;
+  logout: () => Promise<void>;
+  updateUserProfile: (data: Partial<AppUser>) => Promise<void>;
+}
+
+/**
+ * Input type for creating a new listing
+ */
+export interface CreateListingInput {
+  title: string;
+  description: string;
+  price: number;
+  price_period: PricePeriod;
+  type: PropertyType;
+  bedrooms: number;
+  bathrooms: number;
+  area_sqm: number;
+  address: string;
+  city: string;
+  neighborhood: string;
+  coordinates: Coordinates;
+  images: string[];
+  is_available: boolean;
+  is_featured: boolean;
 }
