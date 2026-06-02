@@ -12,6 +12,8 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 
 import { db } from '../lib/firebase';
@@ -21,6 +23,7 @@ import {
   ListingsContextType,
   ListingsContextState,
   FirestoreListing,
+  CreateListingInput,
 } from '../types';
 
 /**
@@ -188,10 +191,38 @@ export const ListingsProvider: React.FC<ListingsProviderProps> = ({ children }) 
     }
   }, []);
 
+  /**
+   * Create a new listing in Firestore
+   */
+  const createListing = useCallback(
+    async (input: CreateListingInput, agentId: string): Promise<string> => {
+      try {
+        const listingsRef = collection(db, 'listings');
+        const docRef = await addDoc(listingsRef, {
+          ...input,
+          agent_id: agentId,
+          coordinates: new (require('firebase/firestore').GeoPoint)(
+            input.coordinates.latitude,
+            input.coordinates.longitude
+          ),
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+        });
+        return docRef.id;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to create listing';
+        console.error('Error creating listing:', error);
+        throw new Error(message);
+      }
+    },
+    []
+  );
+
   const value: ListingsContextType = {
     ...state,
     getListingById,
     getAgentById,
+    createListing,
   };
 
   return (
