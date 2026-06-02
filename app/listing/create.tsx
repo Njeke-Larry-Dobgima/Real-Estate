@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../../hooks/useAuth';
 import { useListings } from '../../hooks/useListings';
-import { pickImage } from '../../utils/upload';
+import { pickImage, uploadMultipleImages } from '../../utils/upload';
 import { Colors, FontSizes, BorderRadius, Shadows, Spacing } from '../../constants/colors';
 import { PropertyType, PricePeriod, CreateListingInput } from '../../types';
 
@@ -127,11 +127,21 @@ export default function CreateListingScreen() {
 
     setLoading(true);
     try {
-      // Use placeholder images (Supabase not configured)
-      const timestamp = Date.now();
-      const imageUrls = imageUris.map((_, index) => 
-        `https://picsum.photos/seed/${timestamp + index}/800/600`
-      );
+      // Create a temporary ID for image upload path
+      const tempId = Date.now().toString();
+      let imageUrls: string[];
+
+      try {
+        // Try uploading images to Supabase
+        imageUrls = await uploadMultipleImages(imageUris, tempId);
+      } catch (uploadError) {
+        // Fallback to placeholder images if Supabase is not configured
+        console.warn('Supabase upload failed, using placeholders:', uploadError);
+        const timestamp = Date.now();
+        imageUrls = imageUris.map((_, index) =>
+          `https://picsum.photos/seed/${timestamp + index}/800/600`
+        );
+      }
 
       // Create listing input
       const input: CreateListingInput = {
