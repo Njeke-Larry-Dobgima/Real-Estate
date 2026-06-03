@@ -46,11 +46,12 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_HEIGHT = 280;
 
 /**
- * Get a valid image URL with fallback
+ * Get a valid image URL with fallback to local asset
  */
-const getImageUrl = (url: string | undefined | null): string => {
+const getImageUrl = (url: string | undefined | null): string | number => {
   if (!url || url.trim() === '' || url === 'null' || url === 'undefined') {
-    return 'https://picsum.photos/seed/placeholder/800/600';
+    // Return local asset as fallback
+    return require('../../assets/icon.png');
   }
   return url;
 };
