@@ -17,9 +17,9 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
+  Image,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -218,10 +218,9 @@ export default function ListingDetailScreen() {
               <Image
                 source={{ uri: getImageUrl(item) }}
                 style={styles.carouselImage}
-                contentFit="cover"
-                placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-                transition={200}
-                onError={(error) => console.log('Carousel image error:', error)}
+                resizeMode="cover"
+                defaultSource={require('../../assets/icon.png')}
+                onError={(error) => console.log('Carousel image error:', error.nativeEvent?.error)}
               />
             )}
           />
