@@ -46,6 +46,16 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_HEIGHT = 280;
 
 /**
+ * Get a valid image URL with fallback
+ */
+const getImageUrl = (url: string | undefined | null): string => {
+  if (!url || url.trim() === '' || url === 'null' || url === 'undefined') {
+    return 'https://picsum.photos/seed/placeholder/800/600';
+  }
+  return url;
+};
+
+/**
  * Property detail screen component
  */
 export default function ListingDetailScreen() {
@@ -198,7 +208,7 @@ export default function ListingDetailScreen() {
         <View style={styles.carouselContainer}>
           <FlatList
             ref={flatListRef}
-            data={listing.images}
+            data={(listing.images && listing.images.length > 0) ? listing.images : ['placeholder']}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
@@ -206,7 +216,7 @@ export default function ListingDetailScreen() {
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => (
               <Image
-                source={{ uri: item || 'https://picsum.photos/seed/placeholder/800/600' }}
+                source={{ uri: getImageUrl(item) }}
                 style={styles.carouselImage}
                 contentFit="cover"
                 placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
