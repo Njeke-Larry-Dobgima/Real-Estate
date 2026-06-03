@@ -232,7 +232,6 @@ export default function ListingDetailScreen() {
               );
             }}
           />
-          />
 
           {/* Dot indicators */}
           <View style={styles.dotsContainer}>
@@ -437,9 +436,11 @@ export default function ListingDetailScreen() {
                 <Text style={styles.noAgentSubtext}>
                   This listing was created by a user. Contact them through the app.
                 </Text>
-                <Text style={styles.agentIdText}>
-                  Agent ID: {listing.agent_id || 'Not assigned'}
-                </Text>
+                {listing.agent_id ? (
+                  <Text style={styles.agentIdText}>
+                    Agent ID: {listing.agent_id}
+                  </Text>
+                ) : null}
               </View>
             )}
           </View>
