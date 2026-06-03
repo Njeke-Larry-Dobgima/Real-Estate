@@ -43,6 +43,14 @@ export const pickImage = async (): Promise<string | null> => {
 };
 
 /**
+ * Convert a file URI to a Blob
+ */
+const uriToBlob = async (uri: string): Promise<Blob> => {
+  const response = await fetch(uri);
+  return await response.blob();
+};
+
+/**
  * Upload an image to Supabase Storage
  * @param uri - Local file URI
  * @param bucket - Storage bucket name
@@ -55,9 +63,7 @@ export const uploadImage = async (
   path: string
 ): Promise<UploadResult> => {
   try {
-    // Fetch the image as a blob
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    const blob = await uriToBlob(uri);
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage.from(bucket).upload(path, blob, {
@@ -69,11 +75,36 @@ export const uploadImage = async (
       throw new Error(`Upload failed: ${error.message}`);
     }
 
-    // Get public URL
+    // Try to get public URL first
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+    
+    // If public URL doesn't work, create a signed URL (valid for 1 year)
+    let finalUrl = urlData.publicUrl;
+    
+    // Test if the public URL is accessible
+    try {
+      const testResponse = await fetch(finalUrl, { method: 'HEAD' });
+      if (!testResponse.ok) {
+        // Fall back to signed URL
+        const { data: signedData } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(data.path, 31536000); // 1 year in seconds
+        if (signedData?.signedUrl) {
+          finalUrl = signedData.signedUrl;
+        }
+      }
+    } catch {
+      // If fetch fails, use signed URL
+      const { data: signedData } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(data.path, 31536000);
+      if (signedData?.signedUrl) {
+        finalUrl = signedData.signedUrl;
+      }
+    }
 
     return {
-      url: urlData.publicUrl,
+      url: finalUrl,
       path: data.path,
     };
   } catch (error) {
@@ -92,14 +123,16 @@ export const uploadMultipleImages = async (
   uris: string[],
   listingId: string
 ): Promise<string[]> => {
-  const uploadPromises = uris.map((uri, index) => {
+  const results: string[] = [];
+  
+  for (let i = 0; i < uris.length; i++) {
     const timestamp = Date.now();
-    const path = `listings/${listingId}/${timestamp}_${index}.jpg`;
-    return uploadImage(uri, StorageBuckets.PROPERTY_IMAGES, path);
-  });
+    const path = `listings/${listingId}/${timestamp}_${i}.jpg`;
+    const result = await uploadImage(uris[i], StorageBuckets.PROPERTY_IMAGES, path);
+    results.push(result.url);
+  }
 
-  const results = await Promise.all(uploadPromises);
-  return results.map((result) => result.url);
+  return results;
 };
 
 /**

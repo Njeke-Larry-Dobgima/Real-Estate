@@ -127,11 +127,21 @@ export default function CreateListingScreen() {
 
     setLoading(true);
     try {
-      // Use placeholder images for now
-      const timestamp = Date.now();
-      const imageUrls = imageUris.map((_, index) =>
-        `https://picsum.photos/seed/${timestamp + index}/800/600`
-      );
+      // Create a temporary ID for image upload path
+      const tempId = Date.now().toString();
+      let imageUrls: string[];
+
+      try {
+        // Upload images to Supabase
+        imageUrls = await uploadMultipleImages(imageUris, tempId);
+      } catch (uploadError) {
+        console.warn('Supabase upload failed, using placeholders:', uploadError);
+        // Fallback to placeholder images
+        const timestamp = Date.now();
+        imageUrls = imageUris.map((_, index) =>
+          `https://picsum.photos/seed/${timestamp + index}/800/600`
+        );
+      }
 
       // Create listing input
       const input: CreateListingInput = {
