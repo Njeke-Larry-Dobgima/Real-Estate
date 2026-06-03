@@ -19,6 +19,8 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../../hooks/useAuth';
+import { auth } from '../../lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { Colors, FontSizes, BorderRadius, Shadows, Spacing } from '../../constants/colors';
 
 export default function LoginScreen() {
@@ -43,6 +45,21 @@ export default function LoginScreen() {
       Alert.alert('Login Error', message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Forgot Password', 'Please enter your email address first');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      Alert.alert('Email Sent', 'Password reset email sent. Check your inbox.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to send reset email';
+      Alert.alert('Error', message);
     }
   };
 
@@ -106,6 +123,10 @@ export default function LoginScreen() {
             ) : (
               <Text style={styles.buttonText}>Sign In</Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.forgotButton} onPress={handleForgotPassword}>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -188,6 +209,15 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: FontSizes.subtitle,
     fontWeight: '600',
+  },
+  forgotButton: {
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  forgotText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '500',
   },
   linkButton: {
     alignItems: 'center',

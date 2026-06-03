@@ -10,6 +10,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { ListingsProvider } from '../context/ListingsContext';
 import { FiltersProvider } from '../context/FiltersContext';
 import { SavedProvider } from '../context/SavedContext';
+import { ErrorBoundary } from '../components';
 import { Colors } from '../constants/colors';
 
 /**
@@ -19,40 +20,42 @@ import { Colors } from '../constants/colors';
 export default function RootLayout() {
   return (
     <View style={styles.container}>
-      <AuthProvider>
-        <ListingsProvider>
-          <FiltersProvider>
-            <SavedProvider>
-              <StatusBar style="auto" />
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: Colors.background },
-                }}
-              >
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="listing/[id]"
-                  options={{
+      <ErrorBoundary>
+        <AuthProvider>
+          <ListingsProvider>
+            <FiltersProvider>
+              <SavedProvider>
+                <StatusBar style="auto" />
+                <Stack
+                  screenOptions={{
                     headerShown: false,
-                    presentation: 'modal',
-                    animation: 'slide_from_bottom',
+                    contentStyle: { backgroundColor: Colors.background },
                   }}
-                />
-                <Stack.Screen
-                  name="listing/create"
-                  options={{
-                    headerShown: false,
-                    presentation: 'modal',
-                    animation: 'slide_from_bottom',
-                  }}
-                />
-              </Stack>
-            </SavedProvider>
-          </FiltersProvider>
-        </ListingsProvider>
-      </AuthProvider>
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="listing/[id]"
+                    options={{
+                      headerShown: false,
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                  <Stack.Screen
+                    name="listing/create"
+                    options={{
+                      headerShown: false,
+                      presentation: 'modal',
+                      animation: 'slide_from_bottom',
+                    }}
+                  />
+                </Stack>
+              </SavedProvider>
+            </FiltersProvider>
+          </ListingsProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </View>
   );
 }

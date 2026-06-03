@@ -18,6 +18,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -141,9 +142,9 @@ export default function ListingDetailScreen() {
             { text: 'Cancel', style: 'cancel' },
             {
               text: 'Copy Number',
-              onPress: () => {
-                // In a real app, you'd use Clipboard API
-                Alert.alert('Phone Number', agent.phone);
+              onPress: async () => {
+                await Clipboard.setStringAsync(agent.phone);
+                Alert.alert('Copied', 'Phone number copied to clipboard');
               },
             },
           ]

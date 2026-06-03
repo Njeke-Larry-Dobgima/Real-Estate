@@ -2,7 +2,7 @@
  * Profile Screen
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,71 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { useAuth } from '../../hooks/useAuth';
+import { db } from '../../lib/firebase';
+import { Listing, FirestoreListing } from '../../types';
 import { Colors, FontSizes, BorderRadius, Shadows, Spacing } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const { user, loading, logout } = useAuth();
+  const [myListings, setMyListings] = useState<Listing[]>([]);
+  const [loadingListings, setLoadingListings] = useState(false);
+  const [showMyListings, setShowMyListings] = useState(false);
+
+  useEffect(() => {
+    if (user && showMyListings) {
+      fetchMyListings();
+    }
+  }, [user, showMyListings]);
+
+  const fetchMyListings = async () => {
+    if (!user) return;
+    setLoadingListings(true);
+    try {
+      const listingsRef = collection(db, 'listings');
+      const q = query(listingsRef, where('agent_id', '==', user.uid));
+      const snapshot = await getDocs(q);
+      const listings: Listing[] = snapshot.docs.map((doc) => {
+        const data = doc.data() as FirestoreListing;
+        return {
+          id: doc.id,
+          title: data.title,
+          description: data.description,
+          price: data.price,
+          price_period: data.price_period,
+          type: data.type,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          area_sqm: data.area_sqm,
+          address: data.address,
+          city: data.city,
+          neighborhood: data.neighborhood,
+          coordinates: {
+            latitude: data.coordinates.latitude,
+            longitude: data.coordinates.longitude,
+          },
+          images: data.images,
+          is_available: data.is_available,
+          is_featured: data.is_featured,
+          agent_id: data.agent_id,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        };
+      });
+      setMyListings(listings);
+    } catch (error) {
+      console.error('Error fetching my listings:', error);
+      Alert.alert('Error', 'Failed to load your listings');
+    } finally {
+      setLoadingListings(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -111,15 +167,73 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => setShowMyListings(!showMyListings)}
+        >
           <View style={styles.menuItemLeft}>
             <View style={[styles.menuIcon, { backgroundColor: Colors.successLight }]}>
               <Ionicons name="list-outline" size={20} color={Colors.success} />
             </View>
             <Text style={styles.menuItemText}>My Listings</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
+          <View style={styles.myListingsBadge}>
+            <Text style={styles.myListingsCount}>{myListings.length}</Text>
+            <Ionicons
+              name={showMyListings ? 'chevron-up' : 'chevron-forward'}
+              size={20}
+              color={Colors.gray400}
+            />
+          </View>
         </TouchableOpacity>
+
+        {showMyListings && (
+          <View style={styles.myListingsSection}>
+            {loadingListings ? (
+              <ActivityIndicator size="small" color={Colors.primary} style={{ padding: Spacing.lg }} />
+            ) : myListings.length === 0 ? (
+              <View style={styles.emptyMyListings}>
+                <Ionicons name="home-outline" size={40} color={Colors.gray300} />
+                <Text style={styles.emptyMyListingsText}>You haven't created any listings yet</Text>
+                <TouchableOpacity
+                  style={styles.createListingButton}
+                  onPress={() => router.push('/listing/create')}
+                >
+                  <Text style={styles.createListingButtonText}>Create Listing</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              myListings.map((listing) => (
+                <TouchableOpacity
+                  key={listing.id}
+                  style={styles.myListingItem}
+                  onPress={() => router.push(`/listing/${listing.id}`)}
+                >
+                  <View style={styles.myListingInfo}>
+                    <Text style={styles.myListingTitle} numberOfLines={1}>
+                      {listing.title}
+                    </Text>
+                    <Text style={styles.myListingPrice}>
+                      {listing.price.toLocaleString()} XAF
+                    </Text>
+                    <View style={styles.myListingStatus}>
+                      <View
+                        style={[
+                          styles.statusDot,
+                          { backgroundColor: listing.is_available ? Colors.success : Colors.error },
+                        ]}
+                      />
+                      <Text style={styles.statusText}>
+                        {listing.is_available ? 'Available' : 'Sold/Rented'}
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        )}
       </View>
 
       <View style={styles.menuSection}>
@@ -328,5 +442,86 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.body,
     fontWeight: '600',
     color: Colors.error,
+  },
+  myListingsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  myListingsCount: {
+    fontSize: FontSizes.caption,
+    fontWeight: '600',
+    color: Colors.primary,
+    backgroundColor: Colors.primaryLight + '20',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.pill,
+  },
+  myListingsSection: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.card,
+    overflow: 'hidden',
+    ...Shadows.small,
+  },
+  emptyMyListings: {
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  emptyMyListingsText: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  createListingButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.card,
+  },
+  createListingButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+  },
+  myListingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  myListingInfo: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
+  myListingTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.xs,
+  },
+  myListingPrice: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.primary,
+    marginBottom: Spacing.xs,
+  },
+  myListingStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
   },
 });
