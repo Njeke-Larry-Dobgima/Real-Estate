@@ -132,11 +132,11 @@ export default function CreateListingScreen() {
       let imageUrls: string[];
 
       try {
-        // Try uploading images to Supabase
+        // Upload images to Supabase
         imageUrls = await uploadMultipleImages(imageUris, tempId);
       } catch (uploadError) {
-        // Fallback to placeholder images if Supabase is not configured
         console.warn('Supabase upload failed, using placeholders:', uploadError);
+        // Fallback to placeholder images
         const timestamp = Date.now();
         imageUrls = imageUris.map((_, index) =>
           `https://picsum.photos/seed/${timestamp + index}/800/600`
