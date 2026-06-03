@@ -86,8 +86,16 @@ export default function ListingDetailScreen() {
     const loadAgent = async () => {
       if (listing?.agent_id) {
         setAgentLoading(true);
-        const agentData = await getAgentById(listing.agent_id);
-        setAgent(agentData);
+        try {
+          const agentData = await getAgentById(listing.agent_id);
+          setAgent(agentData);
+        } catch (error) {
+          console.error('Error loading agent:', error);
+          setAgent(null);
+        } finally {
+          setAgentLoading(false);
+        }
+      } else {
         setAgentLoading(false);
       }
     };
@@ -380,10 +388,9 @@ export default function ListingDetailScreen() {
               <>
                 <View style={styles.agentCard}>
                   <Image
-                    source={{ uri: agent.avatar_url }}
+                    source={{ uri: agent.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(agent.name) }}
                     style={styles.agentAvatar}
-                    contentFit="cover"
-                    placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+                    resizeMode="cover"
                   />
                   <View style={styles.agentInfo}>
                     <View style={styles.agentNameRow}>
@@ -420,7 +427,13 @@ export default function ListingDetailScreen() {
                 </View>
               </>
             ) : (
-              <Text style={styles.noAgentText}>Agent information not available</Text>
+              <View style={styles.noAgentContainer}>
+                <Ionicons name="person-outline" size={40} color={Colors.gray300} />
+                <Text style={styles.noAgentText}>Agent information not available</Text>
+                <Text style={styles.noAgentSubtext}>
+                  Contact the property owner directly for more information
+                </Text>
+              </View>
             )}
           </View>
         </View>
@@ -692,9 +705,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: Spacing.sm,
   },
+  noAgentContainer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xl,
+  },
   noAgentText: {
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
+    marginTop: Spacing.md,
+    fontWeight: '500',
+  },
+  noAgentSubtext: {
+    fontSize: FontSizes.caption,
+    color: Colors.textLight,
+    marginTop: Spacing.xs,
+    textAlign: 'center',
   },
 });

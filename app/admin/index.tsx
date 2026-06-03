@@ -29,9 +29,15 @@ export default function AdminPanelScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Check if user is admin
   useEffect(() => {
+    if (!user || user.role !== 'admin') {
+      Alert.alert('Access Denied', 'You do not have permission to access the admin panel.');
+      router.back();
+      return;
+    }
     fetchAllListings();
-  }, []);
+  }, [user]);
 
   const fetchAllListings = async () => {
     try {
