@@ -58,11 +58,12 @@ const ListingCard: React.FC<ListingCardProps> = ({
     <Pressable style={styles.container} onPress={handlePress}>
       {/* Thumbnail */}
       <Image
-        source={{ uri: listing.images[0] }}
+        source={{ uri: listing.images?.[0] || 'https://picsum.photos/seed/placeholder/800/600' }}
         style={styles.thumbnail}
         contentFit="cover"
         placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
         transition={200}
+        onError={(error) => console.log('Image load error:', error)}
       />
 
       {/* Content */}

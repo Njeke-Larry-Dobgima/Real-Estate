@@ -206,11 +206,12 @@ export default function ListingDetailScreen() {
             keyExtractor={(_, index) => index.toString()}
             renderItem={({ item }) => (
               <Image
-                source={{ uri: item }}
+                source={{ uri: item || 'https://picsum.photos/seed/placeholder/800/600' }}
                 style={styles.carouselImage}
                 contentFit="cover"
                 placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
                 transition={200}
+                onError={(error) => console.log('Carousel image error:', error)}
               />
             )}
           />
