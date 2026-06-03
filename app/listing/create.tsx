@@ -143,6 +143,9 @@ export default function CreateListingScreen() {
         );
       }
 
+      // Log the URLs for debugging
+      console.log('Image URLs:', imageUrls);
+
       // Create listing input
       const input: CreateListingInput = {
         title: title.trim(),
