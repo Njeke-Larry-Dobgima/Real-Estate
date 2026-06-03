@@ -35,17 +35,6 @@ interface ListingCardProps {
 }
 
 /**
- * Get a valid image URL with fallback to local asset
- */
-const getImageUrl = (url: string | undefined | null): string | number => {
-  if (!url || url.trim() === '' || url === 'null' || url === 'undefined') {
-    // Return local asset as fallback
-    return require('../../assets/icon.png');
-  }
-  return url;
-};
-
-/**
  * Card component for displaying a property listing
  */
 const ListingCard: React.FC<ListingCardProps> = ({
@@ -64,16 +53,24 @@ const ListingCard: React.FC<ListingCardProps> = ({
     }
   };
 
+  const imageUrl = listing.images?.[0];
+  const hasValidImage = imageUrl && imageUrl.trim() !== '' && imageUrl !== 'null' && imageUrl !== 'undefined';
+
   return (
     <Pressable style={styles.container} onPress={handlePress}>
       {/* Thumbnail */}
-      <Image
-        source={{ uri: getImageUrl(listing.images?.[0]) }}
-        style={styles.thumbnail}
-        resizeMode="cover"
-        defaultSource={require('../../assets/icon.png')}
-        onError={(error) => console.log('Image load error:', error.nativeEvent?.error)}
-      />
+      {hasValidImage ? (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.thumbnail}
+          resizeMode="cover"
+          onError={(error) => console.log('Image load error:', error.nativeEvent?.error)}
+        />
+      ) : (
+        <View style={[styles.thumbnail, styles.placeholderThumbnail]}>
+          <Ionicons name="home-outline" size={32} color={Colors.gray400} />
+        </View>
+      )}
 
       {/* Content */}
       <View style={styles.content}>
@@ -159,6 +156,10 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: BorderRadius.small,
     backgroundColor: Colors.gray200,
+  },
+  placeholderThumbnail: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
