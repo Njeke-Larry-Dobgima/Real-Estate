@@ -255,12 +255,14 @@ export default function ProfileScreen() {
                     </View>
                     <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.deleteButton}
-                    onPress={() => handleDeleteListing(listing.id, listing.title)}
-                  >
-                    <Ionicons name="trash-outline" size={18} color={Colors.error} />
-                  </TouchableOpacity>
+                  {user.role === 'admin' && (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteListing(listing.id, listing.title)}
+                    >
+                      <Ionicons name="trash-outline" size={18} color={Colors.error} />
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))
             )}
@@ -268,22 +270,24 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      <View style={styles.menuSection}>
-        <Text style={styles.sectionTitle}>Admin</Text>
+      {user.role === 'admin' && (
+        <View style={styles.menuSection}>
+          <Text style={styles.sectionTitle}>Admin</Text>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => router.push('/admin')}
-        >
-          <View style={styles.menuItemLeft}>
-            <View style={[styles.menuIcon, { backgroundColor: Colors.primaryLight + '20' }]}>
-              <Ionicons name="shield-checkmark-outline" size={20} color={Colors.primary} />
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/admin')}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: Colors.primaryLight + '20' }]}>
+                <Ionicons name="shield-checkmark-outline" size={20} color={Colors.primary} />
+              </View>
+              <Text style={styles.menuItemText}>Admin Panel</Text>
             </View>
-            <Text style={styles.menuItemText}>Admin Panel</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
-        </TouchableOpacity>
-      </View>
+            <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.menuSection}>
         <Text style={styles.sectionTitle}>Settings</Text>

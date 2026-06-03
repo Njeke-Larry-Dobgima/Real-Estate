@@ -114,6 +114,7 @@ export default function SearchScreen() {
       minPrice: localMinPrice ? parseInt(localMinPrice, 10) : null,
       maxPrice: localMaxPrice ? parseInt(localMaxPrice, 10) : null,
     });
+    // Navigate to map tab - filters will be applied automatically
     router.push('/');
   }, [setFilters, localSearchQuery, localMinPrice, localMaxPrice]);
 
