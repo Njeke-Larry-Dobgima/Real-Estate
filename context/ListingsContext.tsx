@@ -13,6 +13,7 @@ import {
   doc,
   getDoc,
   addDoc,
+  deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
 
@@ -218,11 +219,29 @@ export const ListingsProvider: React.FC<ListingsProviderProps> = ({ children }) 
     []
   );
 
+  /**
+   * Delete a listing from Firestore
+   */
+  const deleteListing = useCallback(
+    async (id: string): Promise<void> => {
+      try {
+        const listingRef = doc(db, 'listings', id);
+        await deleteDoc(listingRef);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to delete listing';
+        console.error('Error deleting listing:', error);
+        throw new Error(message);
+      }
+    },
+    []
+  );
+
   const value: ListingsContextType = {
     ...state,
     getListingById,
     getAgentById,
     createListing,
+    deleteListing,
   };
 
   return (

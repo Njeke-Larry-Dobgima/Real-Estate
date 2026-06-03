@@ -114,6 +114,7 @@ export interface ListingsContextType extends ListingsContextState {
   getListingById: (id: string) => Listing | undefined;
   getAgentById: (id: string) => Promise<Agent | null>;
   createListing: (input: CreateListingInput, agentId: string) => Promise<string>;
+  deleteListing: (id: string) => Promise<void>;
 }
 
 /**
