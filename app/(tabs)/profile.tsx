@@ -18,12 +18,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 import { useAuth } from '../../hooks/useAuth';
+import { useListings } from '../../hooks/useListings';
 import { db } from '../../lib/firebase';
 import { Listing, FirestoreListing } from '../../types';
 import { Colors, FontSizes, BorderRadius, Shadows, Spacing } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const { user, loading, logout } = useAuth();
+  const { deleteListing } = useListings();
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(false);
   const [showMyListings, setShowMyListings] = useState(false);
@@ -75,6 +77,29 @@ export default function ProfileScreen() {
     } finally {
       setLoadingListings(false);
     }
+  };
+
+  const handleDeleteListing = (listingId: string, listingTitle: string) => {
+    Alert.alert(
+      'Delete Listing',
+      `Are you sure you want to delete "${listingTitle}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteListing(listingId);
+              setMyListings((prev) => prev.filter((l) => l.id !== listingId));
+              Alert.alert('Success', 'Listing deleted successfully');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete listing');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleLogout = () => {
@@ -204,36 +229,60 @@ export default function ProfileScreen() {
               </View>
             ) : (
               myListings.map((listing) => (
-                <TouchableOpacity
-                  key={listing.id}
-                  style={styles.myListingItem}
-                  onPress={() => router.push(`/listing/${listing.id}`)}
-                >
-                  <View style={styles.myListingInfo}>
-                    <Text style={styles.myListingTitle} numberOfLines={1}>
-                      {listing.title}
-                    </Text>
-                    <Text style={styles.myListingPrice}>
-                      {listing.price.toLocaleString()} XAF
-                    </Text>
-                    <View style={styles.myListingStatus}>
-                      <View
-                        style={[
-                          styles.statusDot,
-                          { backgroundColor: listing.is_available ? Colors.success : Colors.error },
-                        ]}
-                      />
-                      <Text style={styles.statusText}>
-                        {listing.is_available ? 'Available' : 'Sold/Rented'}
+                <View key={listing.id} style={styles.myListingItem}>
+                  <TouchableOpacity
+                    style={styles.myListingContent}
+                    onPress={() => router.push(`/listing/${listing.id}`)}
+                  >
+                    <View style={styles.myListingInfo}>
+                      <Text style={styles.myListingTitle} numberOfLines={1}>
+                        {listing.title}
                       </Text>
+                      <Text style={styles.myListingPrice}>
+                        {listing.price.toLocaleString()} XAF
+                      </Text>
+                      <View style={styles.myListingStatus}>
+                        <View
+                          style={[
+                            styles.statusDot,
+                            { backgroundColor: listing.is_available ? Colors.success : Colors.error },
+                          ]}
+                        />
+                        <Text style={styles.statusText}>
+                          {listing.is_available ? 'Available' : 'Sold/Rented'}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
-                </TouchableOpacity>
+                    <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteListing(listing.id, listing.title)}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={Colors.error} />
+                  </TouchableOpacity>
+                </View>
               ))
             )}
           </View>
         )}
+      </View>
+
+      <View style={styles.menuSection}>
+        <Text style={styles.sectionTitle}>Admin</Text>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/admin')}
+        >
+          <View style={styles.menuItemLeft}>
+            <View style={[styles.menuIcon, { backgroundColor: Colors.primaryLight + '20' }]}>
+              <Ionicons name="shield-checkmark-outline" size={20} color={Colors.primary} />
+            </View>
+            <Text style={styles.menuItemText}>Admin Panel</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.menuSection}>
@@ -489,10 +538,15 @@ const styles = StyleSheet.create({
   myListingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  myListingContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
   },
   myListingInfo: {
     flex: 1,
@@ -523,5 +577,9 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
+  },
+  deleteButton: {
+    padding: Spacing.md,
+    paddingLeft: Spacing.sm,
   },
 });
