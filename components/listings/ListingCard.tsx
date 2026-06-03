@@ -4,8 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Image } from 'expo-image';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
@@ -70,10 +69,9 @@ const ListingCard: React.FC<ListingCardProps> = ({
       <Image
         source={{ uri: getImageUrl(listing.images?.[0]) }}
         style={styles.thumbnail}
-        contentFit="cover"
-        placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
-        transition={200}
-        onError={(error) => console.log('Image load error:', error)}
+        resizeMode="cover"
+        defaultSource={require('../../assets/icon.png')}
+        onError={(error) => console.log('Image load error:', error.nativeEvent?.error)}
       />
 
       {/* Content */}
