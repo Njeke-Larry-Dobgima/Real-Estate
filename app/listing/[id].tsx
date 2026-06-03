@@ -86,8 +86,10 @@ export default function ListingDetailScreen() {
     const loadAgent = async () => {
       if (listing?.agent_id) {
         setAgentLoading(true);
+        console.log('Loading agent with ID:', listing.agent_id);
         try {
           const agentData = await getAgentById(listing.agent_id);
+          console.log('Agent data loaded:', agentData);
           setAgent(agentData);
         } catch (error) {
           console.error('Error loading agent:', error);
@@ -96,6 +98,7 @@ export default function ListingDetailScreen() {
           setAgentLoading(false);
         }
       } else {
+        console.log('No agent_id found in listing');
         setAgentLoading(false);
       }
     };
@@ -410,20 +413,24 @@ export default function ListingDetailScreen() {
 
                 {/* Contact buttons */}
                 <View style={styles.contactButtons}>
-                  <Pressable
-                    style={styles.whatsappButton}
-                    onPress={handleWhatsAppPress}
-                  >
-                    <Ionicons name="logo-whatsapp" size={20} color={Colors.white} />
-                    <Text style={styles.contactButtonText}>WhatsApp</Text>
-                  </Pressable>
-                  <Pressable
-                    style={styles.emailButton}
-                    onPress={handleEmailPress}
-                  >
-                    <Ionicons name="mail-outline" size={20} color={Colors.white} />
-                    <Text style={styles.contactButtonText}>Email Agent</Text>
-                  </Pressable>
+                  {agent.whatsapp && (
+                    <Pressable
+                      style={styles.whatsappButton}
+                      onPress={handleWhatsAppPress}
+                    >
+                      <Ionicons name="logo-whatsapp" size={20} color={Colors.white} />
+                      <Text style={styles.contactButtonText}>WhatsApp</Text>
+                    </Pressable>
+                  )}
+                  {agent.email && (
+                    <Pressable
+                      style={styles.emailButton}
+                      onPress={handleEmailPress}
+                    >
+                      <Ionicons name="mail-outline" size={20} color={Colors.white} />
+                      <Text style={styles.contactButtonText}>Email Agent</Text>
+                    </Pressable>
+                  )}
                 </View>
               </>
             ) : (
@@ -431,7 +438,10 @@ export default function ListingDetailScreen() {
                 <Ionicons name="person-outline" size={40} color={Colors.gray300} />
                 <Text style={styles.noAgentText}>Agent information not available</Text>
                 <Text style={styles.noAgentSubtext}>
-                  Contact the property owner directly for more information
+                  This listing was created by a user. Contact them through the app.
+                </Text>
+                <Text style={styles.agentIdText}>
+                  Agent ID: {listing.agent_id || 'Not assigned'}
                 </Text>
               </View>
             )}
@@ -720,5 +730,11 @@ const styles = StyleSheet.create({
     color: Colors.textLight,
     marginTop: Spacing.xs,
     textAlign: 'center',
+  },
+  agentIdText: {
+    fontSize: FontSizes.caption,
+    color: Colors.textLight,
+    marginTop: Spacing.sm,
+    fontStyle: 'italic',
   },
 });
