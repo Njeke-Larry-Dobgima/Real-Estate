@@ -46,17 +46,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const IMAGE_HEIGHT = 280;
 
 /**
- * Get a valid image URL with fallback to local asset
- */
-const getImageUrl = (url: string | undefined | null): string | number => {
-  if (!url || url.trim() === '' || url === 'null' || url === 'undefined') {
-    // Return local asset as fallback
-    return require('../../assets/icon.png');
-  }
-  return url;
-};
-
-/**
  * Property detail screen component
  */
 export default function ListingDetailScreen() {
@@ -226,15 +215,23 @@ export default function ListingDetailScreen() {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={handleImageScroll}
             keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: getImageUrl(item) }}
-                style={styles.carouselImage}
-                resizeMode="cover"
-                defaultSource={require('../../assets/icon.png')}
-                onError={(error) => console.log('Carousel image error:', error.nativeEvent?.error)}
-              />
-            )}
+            renderItem={({ item }) => {
+              const hasValidImage = item && item !== 'placeholder' && item.trim() !== '' && item !== 'null';
+              return hasValidImage ? (
+                <Image
+                  source={{ uri: item }}
+                  style={styles.carouselImage}
+                  resizeMode="cover"
+                  onError={(error) => console.log('Carousel image error:', error.nativeEvent?.error)}
+                />
+              ) : (
+                <View style={[styles.carouselImage, styles.placeholderCarousel]}>
+                  <Ionicons name="home-outline" size={64} color={Colors.gray400} />
+                  <Text style={styles.placeholderText}>No Image Available</Text>
+                </View>
+              );
+            }}
+          />
           />
 
           {/* Dot indicators */}
@@ -479,6 +476,15 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     height: IMAGE_HEIGHT,
     backgroundColor: Colors.gray200,
+  },
+  placeholderCarousel: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    fontSize: FontSizes.body,
+    color: Colors.gray500,
+    marginTop: Spacing.md,
   },
   dotsContainer: {
     position: 'absolute',
