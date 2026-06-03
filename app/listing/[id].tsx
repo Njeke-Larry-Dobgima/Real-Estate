@@ -172,6 +172,11 @@ export default function ListingDetailScreen() {
   const handleEmailPress = useCallback(async () => {
     if (!agent || !listing) return;
 
+    if (!agent.email) {
+      Alert.alert('No Email', 'This agent does not have an email address listed.');
+      return;
+    }
+
     const subject = encodeURIComponent(`Inquiry: ${listing.title}`);
     const body = encodeURIComponent(
       `Hello ${agent.name}, I am interested in the property at ${listing.address}.`
@@ -409,24 +414,20 @@ export default function ListingDetailScreen() {
 
                 {/* Contact buttons */}
                 <View style={styles.contactButtons}>
-                  {agent.whatsapp && (
-                    <Pressable
-                      style={styles.whatsappButton}
-                      onPress={handleWhatsAppPress}
-                    >
-                      <Ionicons name="logo-whatsapp" size={20} color={Colors.white} />
-                      <Text style={styles.contactButtonText}>WhatsApp</Text>
-                    </Pressable>
-                  )}
-                  {agent.email && (
-                    <Pressable
-                      style={styles.emailButton}
-                      onPress={handleEmailPress}
-                    >
-                      <Ionicons name="mail-outline" size={20} color={Colors.white} />
-                      <Text style={styles.contactButtonText}>Email Agent</Text>
-                    </Pressable>
-                  )}
+                  <Pressable
+                    style={styles.whatsappButton}
+                    onPress={handleWhatsAppPress}
+                  >
+                    <Ionicons name="logo-whatsapp" size={20} color={Colors.white} />
+                    <Text style={styles.contactButtonText}>WhatsApp</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.emailButton}
+                    onPress={handleEmailPress}
+                  >
+                    <Ionicons name="mail-outline" size={20} color={Colors.white} />
+                    <Text style={styles.contactButtonText}>Email Agent</Text>
+                  </Pressable>
                 </View>
               </>
             ) : (
