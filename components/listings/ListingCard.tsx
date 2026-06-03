@@ -36,6 +36,16 @@ interface ListingCardProps {
 }
 
 /**
+ * Get a valid image URL with fallback
+ */
+const getImageUrl = (url: string | undefined | null): string => {
+  if (!url || url.trim() === '' || url === 'null' || url === 'undefined') {
+    return 'https://picsum.photos/seed/placeholder/800/600';
+  }
+  return url;
+};
+
+/**
  * Card component for displaying a property listing
  */
 const ListingCard: React.FC<ListingCardProps> = ({
@@ -58,7 +68,7 @@ const ListingCard: React.FC<ListingCardProps> = ({
     <Pressable style={styles.container} onPress={handlePress}>
       {/* Thumbnail */}
       <Image
-        source={{ uri: listing.images?.[0] || 'https://picsum.photos/seed/placeholder/800/600' }}
+        source={{ uri: getImageUrl(listing.images?.[0]) }}
         style={styles.thumbnail}
         contentFit="cover"
         placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
